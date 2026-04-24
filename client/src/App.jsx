@@ -5,9 +5,19 @@ import { DiagnosticsTab } from './components/DiagnosticsTab'
 import { SummaryTab } from './components/SummaryTab'
 import { RawJsonTab } from './components/RawJsonTab'
 
+const DEPLOYED_API_FALLBACK = 'https://bajaj-finserv-cf7ilg541-pratyush-tripathi-4592s-projects.vercel.app'
+
+const isLocalHost = () => {
+  if (typeof window === 'undefined') return false
+  const { hostname } = window.location
+  return hostname === 'localhost' || hostname === '127.0.0.1'
+}
+
 const API_CANDIDATES = import.meta.env.VITE_API_URL
   ? [import.meta.env.VITE_API_URL]
-  : ['http://localhost:5000', 'http://localhost:5001']
+  : isLocalHost()
+    ? ['http://localhost:5000', 'http://localhost:5001']
+    : [DEPLOYED_API_FALLBACK]
 
 const SAMPLE_INPUT = {
   data: [
