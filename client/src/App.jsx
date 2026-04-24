@@ -5,8 +5,6 @@ import { DiagnosticsTab } from './components/DiagnosticsTab'
 import { SummaryTab } from './components/SummaryTab'
 import { RawJsonTab } from './components/RawJsonTab'
 
-const DEPLOYED_API_FALLBACK = 'https://bajaj-finserv-cf7ilg541-pratyush-tripathi-4592s-projects.vercel.app'
-
 const isLocalHost = () => {
   if (typeof window === 'undefined') return false
   const { hostname } = window.location
@@ -17,7 +15,7 @@ const API_CANDIDATES = import.meta.env.VITE_API_URL
   ? [import.meta.env.VITE_API_URL]
   : isLocalHost()
     ? ['http://localhost:5000', 'http://localhost:5001']
-    : [DEPLOYED_API_FALLBACK]
+    : []
 
 const SAMPLE_INPUT = {
   data: [
@@ -97,6 +95,10 @@ function App() {
   }
 
   const postWithFallback = async (payload) => {
+    if (API_CANDIDATES.length === 0) {
+      throw new Error('API URL is missing. Set VITE_API_URL in the frontend deployment environment variables.')
+    }
+
     let lastError = null
 
     for (const baseUrl of API_CANDIDATES) {
