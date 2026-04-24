@@ -11,11 +11,11 @@ const isLocalHost = () => {
   return hostname === 'localhost' || hostname === '127.0.0.1'
 }
 
-const API_CANDIDATES = import.meta.env.VITE_API_URL
-  ? [import.meta.env.VITE_API_URL]
+const API_URL = import.meta.env.VITE_API_URL
+  ? import.meta.env.VITE_API_URL.replace(/\/$/, '')
   : isLocalHost()
-    ? ['http://localhost:5000', 'http://localhost:5001']
-    : []
+    ? 'http://localhost:5000/api/bfhl'
+    : ''
 
 const SAMPLE_INPUT = {
   data: [
@@ -95,35 +95,25 @@ function App() {
   }
 
   const postWithFallback = async (payload) => {
-    if (API_CANDIDATES.length === 0) {
+    if (!API_URL) {
       throw new Error('API URL is missing. Set VITE_API_URL in the frontend deployment environment variables.')
     }
 
-    let lastError = null
+    const res = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    })
 
-    for (const baseUrl of API_CANDIDATES) {
-      try {
-        const res = await fetch(`${baseUrl}/bfhl`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload),
-        })
+    const contentType = res.headers.get('content-type') || ''
+    const responseBody = contentType.includes('application/json') ? await res.json() : null
 
-        const contentType = res.headers.get('content-type') || ''
-        const responseBody = contentType.includes('application/json') ? await res.json() : null
-
-        if (!res.ok) {
-          const message = responseBody?.error || `Backend at ${baseUrl} responded with ${res.status}.`
-          throw new Error(message)
-        }
-
-        return responseBody
-      } catch (error) {
-        lastError = error
-      }
+    if (!res.ok) {
+      const message = responseBody?.error || `Backend at ${API_URL} responded with ${res.status}.`
+      throw new Error(message)
     }
 
-    throw lastError || new Error('Unable to connect to backend on default local ports.')
+    return responseBody
   }
 
   const copyRawJson = async () => {
