@@ -12,9 +12,9 @@ router.post("/", (req, res) => {
   const result = processHierarchy(data);
 
   return res.json({
-    user_id: process.env.BFHL_USER_ID || "yourname_ddmmyyyy",
-    email_id: process.env.BFHL_EMAIL_ID || "your_email",
-    college_roll_number: process.env.BFHL_COLLEGE_ROLL_NUMBER || "your_roll",
+    user_id: "pt4592@srmist.edu.in",
+    email_id: "pt4592@srmist.edu.in",
+    college_roll_number: "RA2311003010573",
     ...result,
   });
 });
